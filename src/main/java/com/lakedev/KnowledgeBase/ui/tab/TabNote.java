@@ -14,12 +14,16 @@ import com.vaadin.data.provider.Sort;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -337,6 +341,47 @@ public class TabNote extends VerticalLayout
 	private boolean confirm(String prompt)
 	{
 		// TODO Create a custom dialog that collects this input from the user.
+		
+		boolean userResponse = false;
+		
+		Window window = new Window();
+		
+		window.setModal(true);
+		
+		window.setPosition(-1, -1);
+		
+		window.setClosable(true);
+		
+		VerticalLayout content = new VerticalLayout();
+		
+		content.setMargin(true);
+		
+		Label lblPrompt = new Label(prompt);
+		
+		Button btnOk = new Button(VaadinIcons.CHECK);
+		
+		btnOk.addStyleName("friendly");
+		
+		btnOk.addClickListener(clicked -> window.close());
+		
+		Button btnCancel = new Button(VaadinIcons.CLOSE_CIRCLE);
+		
+		btnCancel.addStyleName("danger");
+		
+		btnCancel.addClickListener(clicked -> window.close());
+		
+		window.addCloseListener(closeRequest -> 
+		{
+			System.out.println(closeRequest.getComponent());
+		});
+		
+		content.addComponents(
+				lblPrompt,
+				new HorizontalLayout(btnOk,btnCancel));
+		
+		window.setContent(content);
+		
+		UI.getCurrent().addWindow(window);
 		
 		return true;
 	}

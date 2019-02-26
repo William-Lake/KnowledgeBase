@@ -20,12 +20,15 @@ import com.vaadin.data.provider.Sort;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.StreamVariable;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.dnd.FileDropTarget;
 import com.vaadin.ui.themes.ValoTheme;
@@ -263,6 +266,18 @@ public class TabFile extends VerticalLayout
 	private boolean confirm(String prompt)
 	{
 		// TODO Create a custom dialog that collects this input from the user.
+		
+		Window window = new Window(prompt);
+		
+		window.setWidth(300.0f,Unit.PIXELS);
+		
+		FormLayout content = new FormLayout();
+		
+		content.setMargin(true);
+		
+		window.setContent(content);
+		
+		UI.getCurrent().addWindow(window);
 		
 		return true;
 	}
