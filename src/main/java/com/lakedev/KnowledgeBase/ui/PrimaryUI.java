@@ -14,9 +14,10 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.TabSheet;
@@ -48,18 +49,31 @@ public class PrimaryUI extends UI
 	@Override
 	protected void init(VaadinRequest request)
 	{
+		// LAYOUT CONTAINER =========================================
 		vlContainer = new VerticalLayout();
 
 		vlContainer.setWidth("100%");
+		
+		// HEADER LABEL =============================================
 		
 		Label lblHeader = new Label("KnowledgeBase");
 		
 		lblHeader.addStyleName("h1");
 		
+		// HEADER REPO LINK/ICON ====================================
+		
+		Link lnkSource = new Link("", new ExternalResource("https://github.com/William-Lake/KnowledgeBase"));
+		
+		lnkSource.setDescription("KnowledgeBase Repo");
+		
+		lnkSource.setIcon(new ThemeResource("img/GitHub-Mark-32px.png"));
+		
+		// TABS =====================================================
 		tabNote = new TabNote(savedNoteRepository);
 		
 		tabFile = new TabFile(savedFileRepository);
 		
+		// TAB SHEET ================================================
 		tsContainer = new TabSheet();
 		
 		tsContainer.setHeight(100.0f,Unit.PERCENTAGE);
@@ -70,17 +84,16 @@ public class PrimaryUI extends UI
 		
 		tsContainer.addTab(tabFile, "Files", VaadinIcons.BRIEFCASE);
 		
-		Link lnkSource = new Link("", new ExternalResource("https://github.com/William-Lake/KnowledgeBase"));
-		
-		lnkSource.setDescription("KnowledgeBase Repo");
-		
-		lnkSource.setIcon(new ThemeResource("img/GitHub-Mark-32px.png"));
+		// ADDING COMPONENTS ========================================
 		
 		vlContainer.addComponents(
 				lblHeader,
 				tsContainer,
-				lnkSource);
-
+				lnkSource
+				);
+		
+		vlContainer.setComponentAlignment(lnkSource, Alignment.TOP_RIGHT);
+		
 		setContent(vlContainer);
 	}
 

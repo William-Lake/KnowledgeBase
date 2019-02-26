@@ -12,6 +12,7 @@ import com.vaadin.data.provider.Query;
 import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.data.provider.Sort;
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
@@ -48,7 +49,7 @@ public class TabNote extends VerticalLayout
 	{
 		this.savedNoteRepository = savedNoteRepository;
 		
-		// TITLE TEXT FIELD ====================================
+		// TITLE FIELD ====================================
 		
 		txtNoteTitle = new TextField();
 		
@@ -65,7 +66,7 @@ public class TabNote extends VerticalLayout
 			btnClear.setEnabled(true);
 		});
 		
-		// RICH TEXT AREA ======================================
+		// NOTE DATA ======================================
 
 		rtaNoteText = new RichTextArea();
 		
@@ -88,7 +89,7 @@ public class TabNote extends VerticalLayout
 		
 		btnSave.setDescription("Save Changes");
 		
-		btnSave.addStyleName("primary");
+		btnSave.addStyleName("friendly");
 		
 		btnSave.setEnabled(false);
 		
@@ -154,8 +155,82 @@ public class TabNote extends VerticalLayout
 		
 		grdNote = new Grid<>();
 		
-		/////////// JPA DataProvider
+		grdNote.setSizeFull();
+		
+		grdNote.setSelectionMode(SelectionMode.SINGLE);
+		
+		////// BUILDING COLUMNS
+		
+		// Note Title Column
+		grdNote
+		.addColumn(SavedNote::getNoteTitle)
+		.setId("NoteTitle")
+		.setCaption("Title")
+		.setWidthUndefined();
+		
+		// Delete Button Column
+		grdNote.addComponentColumn(savedNote -> 
+		{
+			Button btnDelete = new Button(VaadinIcons.TRASH);
+			
+			btnDelete.setDescription("Delete Note");
+			
+			btnDelete.addStyleName("danger");
+			
+			btnDelete.addClickListener(clicked -> deleteNote(savedNote));
+			
+			return btnDelete;
+			
+		})
+		.setCaption("Delete")
+		.setWidth(90);
+		
+		grdNote
+		.getColumns()
+		.stream()
+		.forEach(column -> column.setHidable(false));
+		
+		////// ADDING LISTENER
+		grdNote.addItemClickListener((itemClicked) -> 
+		{
+			/*
+			 * We want a note double clicked in the Note Table
+			 * to be added to the current editor.
+			 * We also want to check with the user if unsaved
+			 * data is going to be overwritten before doing so.
+			 */
+			if (itemClicked.getMouseEventDetails().isDoubleClick())
+			{
+				boolean doClear = true;
+				
+				if (currentNote != null && btnSave.isEnabled())
+				{
+					doClear = confirm("Really Clear?");
+				} 
+				
+				if (doClear)
+				{
+					SavedNote selectedNote = itemClicked.getItem();
+					
+					txtNoteTitle.setValue(selectedNote.getNoteTitle());
+					
+					rtaNoteText.setValue(selectedNote.getNoteText());
+					
+					currentNote = selectedNote;
+					
+					btnSave.setEnabled(false);
+					
+					btnClear.setEnabled(true);
+				}
+				
+			} 
+		});
+		
+		grdNote.setColumnReorderingAllowed(false);
+		
+		////// BUILDING JPA DATAPROVIDER
 		/*
+		 * RESOURCES
 		 * https://vaadin.com/directory/component/spring-data-provider-add-on/1.1.0/links
 		 * https://github.com/Artur-/spring-data-vaadin-crud/blob/master/src/main/java/crud/backend/PersonRepository.java
 		 * https://github.com/Artur-/spring-data-vaadin-crud/blob/master/src/main/java/crud/vaadin/MainUI.java
@@ -195,59 +270,8 @@ public class TabNote extends VerticalLayout
 	    
 	    grdNote.getDataProvider().refreshAll();
 	    
-		grdNote.setSizeFull();
-		
-		grdNote.setSelectionMode(SelectionMode.SINGLE);
-		
-		grdNote.addColumn(SavedNote::getNoteTitle).setId("NoteTitle").setCaption("Title").setWidthUndefined();
-		
-		grdNote.addComponentColumn(savedNote -> 
-		{
-			Button btnDelete = new Button(VaadinIcons.TRASH);
-			
-			btnDelete.setDescription("Delete Note");
-			
-			btnDelete.addStyleName("danger");
-			
-			btnDelete.addClickListener(clicked -> deleteNote(savedNote));
-			
-			return btnDelete;
-			
-		}).setCaption("Delete").setWidth(90);
-		
-		grdNote.setColumnReorderingAllowed(false);
-		
-		grdNote.getColumns().stream().forEach(column -> column.setHidable(false));
-		
-		grdNote.addItemClickListener((itemClicked) -> 
-		{
-			if (itemClicked.getMouseEventDetails().isDoubleClick())
-			{
-				boolean doClear = true;
-				
-				if (currentNote != null && btnSave.isEnabled())
-				{
-					doClear = confirm("Really Clear?");
-				} 
-				
-				if (doClear)
-				{
-					SavedNote selectedNote = itemClicked.getItem();
-					
-					txtNoteTitle.setValue(selectedNote.getNoteTitle());
-					
-					rtaNoteText.setValue(selectedNote.getNoteText());
-					
-					currentNote = selectedNote;
-					
-					btnSave.setEnabled(false);
-					
-					btnClear.setEnabled(true);
-				}
-				
-			} 
-		});
-		
+	    ////// ADDING NOTE FILTER CONTROL
+	    
 		HeaderRow filteringHeader = grdNote.appendHeaderRow();
 		
 		TextField txtTitleFilter = new TextField();
@@ -262,15 +286,24 @@ public class TabNote extends VerticalLayout
 		
 		txtTitleFilter.addValueChangeListener((valueChanged) -> dataProvider.setFilter(txtTitleFilter.getValue()));
 		
-		filteringHeader.getCell("NoteTitle").setComponent(txtTitleFilter);
+		// This gathers the Note Title column via it's id, added in the "Building Columns" section.
+		filteringHeader
+		.getCell("NoteTitle")
+		.setComponent(txtTitleFilter);
+		
+		// HL BUTTON CONTAINER
+		
+		HorizontalLayout hlButtonContainer = new HorizontalLayout(btnSave, btnClear);
 		
 		// ADDING COMPONENTS ===============================================
 		
 		this.addComponents(
+				hlButtonContainer,
 				txtNoteTitle,
 				rtaNoteText,
-				new HorizontalLayout(btnSave, btnClear),
 				grdNote);
+		
+		setComponentAlignment(hlButtonContainer, Alignment.MIDDLE_RIGHT);
 	}
 	
 	private void deleteNote(SavedNote savedNote)

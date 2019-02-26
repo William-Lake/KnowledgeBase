@@ -17,7 +17,9 @@ import com.lakedev.KnowledgeBase.repository.SavedFileRepository;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.data.provider.Sort;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.StreamVariable;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.Notification;
@@ -54,8 +56,67 @@ public class TabFile extends VerticalLayout
 		
 		grdFile = new Grid<>();
 		
-		/////////// JPA DataProvider
+		grdFile.setSizeFull();
+		
+		grdFile.setSelectionMode(SelectionMode.SINGLE);
+		
+		////// BUILDING COLUMNS
+		
+		// File Name Column
+		grdFile.addColumn(SavedFile::getFileName).setId("fileName").setCaption("FileName");
+		
+		// Delete File Column
+		grdFile.addComponentColumn(savedFile -> 
+		{
+			Button btnDelete = new Button(VaadinIcons.TRASH);
+			
+			btnDelete.setDescription("Delete Note");
+			
+			btnDelete.addStyleName("danger");
+			
+			btnDelete.addClickListener(clicked -> deleteFile(savedFile));
+			
+			return btnDelete;
+			
+		})
+		.setCaption("Delete")
+		.setWidth(90);
+		
+		////// ADDING LISTENER
+		
+		grdFile.addItemClickListener((itemClicked) -> 
+		{
+			if (itemClicked.getMouseEventDetails().isDoubleClick())
+			{
+				progressBar.setVisible(true);
+				
+				SavedFile savedFile = itemClicked.getItem();
+				
+				String userDir = System.getProperty("user.home");
+				
+				Path filePath = Paths.get(userDir, savedFile.getFileName());
+				
+				Notification.show("Downloading", String.format("Downloading %s to %s.", savedFile.getFileName(),filePath.toString()), Notification.Type.TRAY_NOTIFICATION);
+				
+				try
+				{
+					Files.write(Paths.get(userDir,savedFile.getFileName()), savedFile.getFileData());
+					
+					Notification.show("Finished", String.format("Completed download of %s to %s.", savedFile.getFileName(),filePath.toString()), Notification.Type.TRAY_NOTIFICATION);
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+					
+					Notification.show("ERROR","Error while Downloading File: " + e.getMessage(),Notification.Type.ERROR_MESSAGE);
+				}
+				
+				progressBar.setVisible(false);
+			}
+		});
+		
+		////// BUILDING JPA DATAPROVIDER
 		/*
+		 * RESOURCES
 		 * https://vaadin.com/directory/component/spring-data-provider-add-on/1.1.0/links
 		 * https://github.com/Artur-/spring-data-vaadin-crud/blob/master/src/main/java/crud/backend/PersonRepository.java
 		 * https://github.com/Artur-/spring-data-vaadin-crud/blob/master/src/main/java/crud/vaadin/MainUI.java
@@ -95,18 +156,8 @@ public class TabFile extends VerticalLayout
 	    
 	    grdFile.getDataProvider().refreshAll();
 	    
-		grdFile.setSizeFull();
-		
-		grdFile.setSelectionMode(SelectionMode.SINGLE);
-		
-		grdFile.addColumn(SavedFile::getFileId).setId("fileId").setCaption("Id");
-		
-		grdFile.addColumn(SavedFile::getFileName).setId("fileName").setCaption("FileName");
-		
-		grdFile.setColumnReorderingAllowed(true);
-		
-		grdFile.getColumns().stream().forEach(column -> column.setHidable(true));
-		
+	    ////// ADDING FILE FILTER CONTROL
+	    
 		HeaderRow filteringHeader = grdFile.appendHeaderRow();
 		
 		TextField fileNameFilter = new TextField();
@@ -119,33 +170,10 @@ public class TabFile extends VerticalLayout
 		
 		fileNameFilter.addValueChangeListener((valueChanged) -> dataProvider.setFilter(fileNameFilter.getValue()));
 		
-		filteringHeader.getCell("fileName").setComponent(fileNameFilter);
-		
-		grdFile.addItemClickListener((itemClicked) -> 
-		{
-			if (itemClicked.getMouseEventDetails().isDoubleClick())
-			{
-				SavedFile savedFile = itemClicked.getItem();
-				
-				String userDir = System.getProperty("user.home");
-				
-				Path filePath = Paths.get(userDir, savedFile.getFileName());
-				
-				Notification.show("Downloading", String.format("Downloading %s to %s.", savedFile.getFileName(),filePath.toString()), Notification.Type.TRAY_NOTIFICATION);
-				
-				try
-				{
-					Files.write(Paths.get(userDir,savedFile.getFileName()), savedFile.getFileData());
-					
-					Notification.show("Finished", String.format("Completed download of %s to %s.", savedFile.getFileName(),filePath.toString()), Notification.Type.TRAY_NOTIFICATION);
-				} catch (IOException e)
-				{
-					e.printStackTrace();
-					
-					Notification.show("ERROR","Error while Downloading File: " + e.getMessage(),Notification.Type.ERROR_MESSAGE);
-				}
-			}
-		});
+		// This gathers the FileName column via it's id, added in the "Building Columns" section.
+		filteringHeader
+		.getCell("fileName")
+		.setComponent(fileNameFilter);
 		
 		// FILE DROP TARGET ================================================
 		
@@ -159,6 +187,8 @@ public class TabFile extends VerticalLayout
 				
 				final StreamVariable streamVariable = new StreamVariable()
 				{
+
+					private static final long serialVersionUID = 3852080499795151223L;
 
 					@Override
 					public OutputStream getOutputStream()
@@ -211,7 +241,6 @@ public class TabFile extends VerticalLayout
 				progressBar.setVisible(true);
 			});
 			
-			grdFile.getDataProvider().refreshAll();
 		});
 		
 		// ADDING COMPONENTS ===============================================		
@@ -219,6 +248,23 @@ public class TabFile extends VerticalLayout
 		addComponents(
 				progressBar,
 				grdFile);
+	}
+
+	private void deleteFile(SavedFile savedFile)
+	{
+		if (confirm("Really Delete?"))
+		{
+			savedFileRepository.deleteById(savedFile.getFileId());
+			
+			grdFile.getDataProvider().refreshAll();
+		}
+	}
+	
+	private boolean confirm(String prompt)
+	{
+		// TODO Create a custom dialog that collects this input from the user.
+		
+		return true;
 	}
 
 	private void saveFile(final String fileName, final ByteArrayOutputStream byteArrayOutputStream)
@@ -239,6 +285,7 @@ public class TabFile extends VerticalLayout
 		
 		savedFileRepository.save(savedFile);
 		
+		grdFile.getDataProvider().refreshAll();
 	}
 
 }
