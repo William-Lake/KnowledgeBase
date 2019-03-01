@@ -1,14 +1,23 @@
 package com.lakedev.KnowledgeBase.ui;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
 import javax.servlet.annotation.WebServlet;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.lakedev.KnowledgeBase.KnowledgeBaseApplication;
 import com.lakedev.KnowledgeBase.repository.SavedFileRepository;
 import com.lakedev.KnowledgeBase.repository.SavedNoteRepository;
 import com.lakedev.KnowledgeBase.ui.tab.TabFile;
 import com.lakedev.KnowledgeBase.ui.tab.TabNote;
+import com.lakedev.KnowledgeBase.util.DbStatus;
+import com.lakedev.KnowledgeBase.util.DbUtil;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.ExternalResource;
@@ -17,7 +26,6 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.TabSheet;
@@ -39,7 +47,7 @@ public class PrimaryUI extends UI
 	private TabNote tabNote;
 	
 	private TabFile tabFile;
-
+	
 	@Autowired
 	private SavedFileRepository savedFileRepository;
 	
@@ -48,6 +56,19 @@ public class PrimaryUI extends UI
 	
 	@Override
 	protected void init(VaadinRequest request)
+	{
+		DbStatus dbStatus = DbUtil.checkDb(savedFileRepository,savedNoteRepository);
+		
+		if (dbStatus == DbStatus.OK)
+		{
+			buildUI();
+		} else if (dbStatus == DbStatus.PARTIAL_DB)
+		{
+			// TODO Alert user, provide them option to export db data.
+		}
+	}
+	
+	private void buildUI()
 	{
 		// LAYOUT CONTAINER =========================================
 		vlContainer = new VerticalLayout();

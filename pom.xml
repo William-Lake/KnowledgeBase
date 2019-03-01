@@ -52,8 +52,6 @@
 			<artifactId>spring-data-provider</artifactId>
 			<version>1.1.0</version>
 		</dependency>
-
-
 	</dependencies>
 
 	<dependencyManagement>
