@@ -8,6 +8,7 @@ import org.vaadin.artur.spring.dataprovider.FilterablePageableDataProvider;
 
 import com.lakedev.KnowledgeBase.model.SavedNote;
 import com.lakedev.KnowledgeBase.repository.SavedNoteRepository;
+import com.lakedev.KnowledgeBase.ui.dialog.ConfirmationDialog;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.data.provider.Sort;
@@ -19,6 +20,7 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
@@ -312,17 +314,31 @@ public class TabNote extends VerticalLayout
 	
 	private void deleteNote(SavedNote savedNote)
 	{
-		if (confirm("Really Delete?"))
+		ConfirmationDialog confirmationDialog = new ConfirmationDialog(String.format("Really Delete Note?",savedNote.getNoteTitle()));
+		
+		confirmationDialog.addCloseListener((closeRequest) -> 
 		{
-			savedNoteRepository.deleteById(savedNote.getNoteId());
-			
-			grdNote.getDataProvider().refreshAll();
-			
-			if (savedNote.getNoteId() == currentNote.getNoteId())
+			switch(confirmationDialog.getResponse())
 			{
-				clearCurrentNote();
+			case YES:
+				
+				savedNoteRepository.deleteById(savedNote.getNoteId());
+				
+				grdNote.getDataProvider().refreshAll();
+				
+				if (savedNote.getNoteId() == currentNote.getNoteId())
+				{
+					clearCurrentNote();
+				}
+				
+				Notification.show("Deleted Note.",savedNote.getNoteTitle(), Notification.Type.TRAY_NOTIFICATION);
+				
+				break;
+				
 			}
-		}
+		});
+		
+		UI.getCurrent().addWindow(confirmationDialog);
 	}
 	
 	private void clearCurrentNote()
