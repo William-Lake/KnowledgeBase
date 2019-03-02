@@ -1,7 +1,16 @@
 package com.lakedev.KnowledgeBase;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+import javax.annotation.PreDestroy;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.ApplicationPidFileWriter;
 
 @SpringBootApplication
 public class KnowledgeBaseApplication 
@@ -44,7 +53,32 @@ public class KnowledgeBaseApplication
 			args = tmpArgs;
 		}
 		
-		SpringApplication.run(KnowledgeBaseApplication.class, args);
+		SpringApplication app = new SpringApplication(KnowledgeBaseApplication.class);
+		
+		app.addListeners(new ApplicationPidFileWriter());
+		
+		app.run(args);
+	}
+	
+	@PreDestroy
+	public static void shutDown()
+	{
+		// This is probably not a good idea.
+		try
+		{
+			Path pidFilePath = Paths.get("application.pid");
+			
+			String pid = Files.readAllLines(pidFilePath).get(0);
+			
+//			Files.delete(pidFilePath);
+			
+			
+//			Runtime.getRuntime().exec("TASKKILL /F " + pid);
+			
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 }

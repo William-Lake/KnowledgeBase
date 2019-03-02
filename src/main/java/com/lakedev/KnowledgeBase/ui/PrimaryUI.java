@@ -1,25 +1,20 @@
 package com.lakedev.KnowledgeBase.ui;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-
 import javax.servlet.annotation.WebServlet;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.lakedev.KnowledgeBase.KnowledgeBaseApplication;
 import com.lakedev.KnowledgeBase.repository.SavedFileRepository;
 import com.lakedev.KnowledgeBase.repository.SavedNoteRepository;
+import com.lakedev.KnowledgeBase.ui.dialog.ConfirmationDialog;
 import com.lakedev.KnowledgeBase.ui.tab.TabFile;
 import com.lakedev.KnowledgeBase.ui.tab.TabNote;
 import com.lakedev.KnowledgeBase.util.DbStatus;
 import com.lakedev.KnowledgeBase.util.DbUtil;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.navigator.Navigator;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
@@ -28,6 +23,9 @@ import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
+import com.vaadin.ui.MenuBar;
+import com.vaadin.ui.MenuBar.Command;
+import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -40,14 +38,6 @@ public class PrimaryUI extends UI
 
 	private static final long serialVersionUID = 5336491868802277718L;
 
-	private VerticalLayout vlContainer;
-	
-	private TabSheet tsContainer;
-	
-	private TabNote tabNote;
-	
-	private TabFile tabFile;
-	
 	@Autowired
 	private SavedFileRepository savedFileRepository;
 	
@@ -70,10 +60,42 @@ public class PrimaryUI extends UI
 	
 	private void buildUI()
 	{
-		// LAYOUT CONTAINER =========================================
-		vlContainer = new VerticalLayout();
+		// LAYOUT CONTAINERS =========================================
+		VerticalLayout vlContainer = new VerticalLayout();
 
-		vlContainer.setWidth("100%");
+		vlContainer.setWidth(100.0f, Unit.PERCENTAGE);
+		
+		// MENU =======================================================
+		
+		MenuBar mnbrMenu = new MenuBar();
+		
+		mnbrMenu.setWidth(100.0f, Unit.PERCENTAGE);
+		
+		mnbrMenu.addStyleName("borderless");
+		
+		MenuItem mnitFile = mnbrMenu.addItem("File");
+		
+		Command cmdQuit = selected -> 
+		{
+			ConfirmationDialog confirmationDialog = new ConfirmationDialog("Really Quit?");
+			
+			confirmationDialog.addCloseListener((closeRequest) -> 
+			{
+				switch(confirmationDialog.getResponse())
+				{
+				case YES:
+
+					System.exit(0);
+					
+					break;
+					
+				}
+			});
+			
+			UI.getCurrent().addWindow(confirmationDialog);
+		};
+		
+		mnitFile.addItem("Quit", cmdQuit);
 		
 		// HEADER LABEL =============================================
 		
@@ -90,12 +112,12 @@ public class PrimaryUI extends UI
 		lnkSource.setIcon(new ThemeResource("img/GitHub-Mark-32px.png"));
 		
 		// TABS =====================================================
-		tabNote = new TabNote(savedNoteRepository);
+		TabNote tabNote = new TabNote(savedNoteRepository);
 		
-		tabFile = new TabFile(savedFileRepository);
+		TabFile tabFile = new TabFile(savedFileRepository);
 		
 		// TAB SHEET ================================================
-		tsContainer = new TabSheet();
+		TabSheet tsContainer = new TabSheet();
 		
 		tsContainer.setHeight(100.0f,Unit.PERCENTAGE);
 		
@@ -109,6 +131,7 @@ public class PrimaryUI extends UI
 		
 		vlContainer.addComponents(
 				lblHeader,
+				mnbrMenu,
 				tsContainer,
 				lnkSource
 				);
