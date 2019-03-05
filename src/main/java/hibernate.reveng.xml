@@ -4,4 +4,7 @@
 <hibernate-reverse-engineering>
 	<table-filter match-name="saved_file"></table-filter>
 	<table-filter match-name="saved_note"></table-filter>
+	<table-filter match-name="task"></table-filter>
+	<table-filter match-name="todo_list"></table-filter>
+	<table-filter match-name="todo_list_task"></table-filter>
 </hibernate-reverse-engineering>

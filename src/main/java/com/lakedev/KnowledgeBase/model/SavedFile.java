@@ -1,10 +1,8 @@
 package com.lakedev.KnowledgeBase.model;
-// Generated Feb 21, 2019 3:29:32 PM by Hibernate Tools 5.2.11.Final
+// Generated Mar 5, 2019 4:10:23 PM by Hibernate Tools 5.2.11.Final
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -17,19 +15,15 @@ import javax.persistence.UniqueConstraint;
 public class SavedFile implements java.io.Serializable
 {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4824477966158105986L;
 	private int fileId;
 	private String fileName;
-	private byte[] fileData;
+	private String fileData;
 
 	public SavedFile()
 	{
 	}
 
-	public SavedFile(int fileId, String fileName, byte[] fileData)
+	public SavedFile(int fileId, String fileName, String fileData)
 	{
 		this.fileId = fileId;
 		this.fileName = fileName;
@@ -37,7 +31,7 @@ public class SavedFile implements java.io.Serializable
 	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+
 	@Column(name = "file_id", unique = true, nullable = false)
 	public int getFileId()
 	{
@@ -60,13 +54,13 @@ public class SavedFile implements java.io.Serializable
 		this.fileName = fileName;
 	}
 
-	@Column(name = "file_data", nullable = false)
-	public byte[] getFileData()
+	@Column(name = "file_data", nullable = false, length = 2000000000)
+	public String getFileData()
 	{
 		return this.fileData;
 	}
 
-	public void setFileData(byte[] fileData)
+	public void setFileData(String fileData)
 	{
 		this.fileData = fileData;
 	}

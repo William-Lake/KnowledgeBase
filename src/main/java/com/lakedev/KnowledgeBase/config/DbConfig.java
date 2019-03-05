@@ -30,7 +30,9 @@ public class DbConfig
 	{
 		final DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		
-		dataSource.setUrl("jdbc:sqlite:" + Paths.get("knowledge.db").toAbsolutePath().toString());
+//		dataSource.setUrl("jdbc:sqlite:" + Paths.get("knowledge.db").toAbsolutePath().toString());
+		
+		dataSource.setUrl(env.getProperty("url"));
 		
 		dataSource.setUsername(env.getProperty("user"));
 		

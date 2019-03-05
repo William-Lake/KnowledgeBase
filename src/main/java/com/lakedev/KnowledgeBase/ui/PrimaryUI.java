@@ -7,14 +7,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.lakedev.KnowledgeBase.repository.SavedFileRepository;
 import com.lakedev.KnowledgeBase.repository.SavedNoteRepository;
+import com.lakedev.KnowledgeBase.repository.TaskRepository;
+import com.lakedev.KnowledgeBase.repository.TodoListRepository;
+import com.lakedev.KnowledgeBase.repository.TodoListTaskRepository;
 import com.lakedev.KnowledgeBase.ui.dialog.ConfirmationDialog;
 import com.lakedev.KnowledgeBase.ui.tab.TabFile;
 import com.lakedev.KnowledgeBase.ui.tab.TabNote;
+import com.lakedev.KnowledgeBase.ui.tab.TabTodoList;
 import com.lakedev.KnowledgeBase.util.DbStatus;
 import com.lakedev.KnowledgeBase.util.DbUtil;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.navigator.Navigator;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
@@ -43,6 +46,15 @@ public class PrimaryUI extends UI
 	
 	@Autowired
 	private SavedNoteRepository savedNoteRepository;
+	
+	@Autowired
+	private TodoListRepository todoListRepository;
+	
+	@Autowired
+	private TaskRepository taskRepository;
+	
+	@Autowired
+	private TodoListTaskRepository todoListTaskRepository;
 	
 	@Override
 	protected void init(VaadinRequest request)
@@ -116,6 +128,8 @@ public class PrimaryUI extends UI
 		
 		TabFile tabFile = new TabFile(savedFileRepository);
 		
+		TabTodoList tabTodoList = new TabTodoList(todoListRepository, taskRepository, todoListTaskRepository);
+		
 		// TAB SHEET ================================================
 		TabSheet tsContainer = new TabSheet();
 		
@@ -126,6 +140,8 @@ public class PrimaryUI extends UI
 		tsContainer.addTab(tabNote, "Notes", VaadinIcons.PENCIL);
 		
 		tsContainer.addTab(tabFile, "Files", VaadinIcons.BRIEFCASE);
+		
+		tsContainer.addTab(tabTodoList, "Todo", VaadinIcons.CHECK_SQUARE);
 		
 		// ADDING COMPONENTS ========================================
 		
