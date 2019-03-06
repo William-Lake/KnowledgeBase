@@ -4,6 +4,8 @@ package com.lakedev.KnowledgeBase.model;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -17,6 +19,7 @@ import javax.persistence.Table;
 public class TodoListTask implements java.io.Serializable
 {
 
+	private static final long serialVersionUID = 8978634077477919509L;
 	private int id;
 	private TodoList todoList;
 	private int task;
@@ -33,7 +36,7 @@ public class TodoListTask implements java.io.Serializable
 	}
 
 	@Id
-
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id", unique = true, nullable = false)
 	public int getId()
 	{

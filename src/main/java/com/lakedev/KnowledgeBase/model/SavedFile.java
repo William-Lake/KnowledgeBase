@@ -3,6 +3,8 @@ package com.lakedev.KnowledgeBase.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -14,16 +16,16 @@ import javax.persistence.UniqueConstraint;
 @Table(name = "saved_file", uniqueConstraints = @UniqueConstraint(columnNames = "file_name"))
 public class SavedFile implements java.io.Serializable
 {
-
+	private static final long serialVersionUID = -4824477966158105986L;
 	private int fileId;
 	private String fileName;
-	private String fileData;
+	private byte[] fileData;
 
 	public SavedFile()
 	{
 	}
 
-	public SavedFile(int fileId, String fileName, String fileData)
+	public SavedFile(int fileId, String fileName, byte[] fileData)
 	{
 		this.fileId = fileId;
 		this.fileName = fileName;
@@ -31,7 +33,7 @@ public class SavedFile implements java.io.Serializable
 	}
 
 	@Id
-
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "file_id", unique = true, nullable = false)
 	public int getFileId()
 	{
@@ -55,12 +57,12 @@ public class SavedFile implements java.io.Serializable
 	}
 
 	@Column(name = "file_data", nullable = false, length = 2000000000)
-	public String getFileData()
+	public byte[] getFileData()
 	{
 		return this.fileData;
 	}
 
-	public void setFileData(String fileData)
+	public void setFileData(byte[] fileData)
 	{
 		this.fileData = fileData;
 	}
