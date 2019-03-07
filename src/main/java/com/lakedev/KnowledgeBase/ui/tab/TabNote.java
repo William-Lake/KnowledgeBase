@@ -1,7 +1,6 @@
 package com.lakedev.KnowledgeBase.ui.tab;
 
 import java.util.List;
-import java.util.function.Function;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,7 +9,6 @@ import org.vaadin.artur.spring.dataprovider.FilterablePageableDataProvider;
 import com.lakedev.KnowledgeBase.model.SavedNote;
 import com.lakedev.KnowledgeBase.repository.SavedNoteRepository;
 import com.lakedev.KnowledgeBase.ui.dialog.ConfirmationDialog;
-import com.lakedev.KnowledgeBase.ui.dialog.Response;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.data.provider.Sort;

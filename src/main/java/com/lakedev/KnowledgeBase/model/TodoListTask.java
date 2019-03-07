@@ -22,13 +22,13 @@ public class TodoListTask implements java.io.Serializable
 	private static final long serialVersionUID = 8978634077477919509L;
 	private int id;
 	private TodoList todoList;
-	private int task;
+	private Task task;
 
 	public TodoListTask()
 	{
 	}
 
-	public TodoListTask(int id, TodoList todoList, int task)
+	public TodoListTask(int id, TodoList todoList, Task task)
 	{
 		this.id = id;
 		this.todoList = todoList;
@@ -60,13 +60,14 @@ public class TodoListTask implements java.io.Serializable
 		this.todoList = todoList;
 	}
 
+	@ManyToOne(fetch = FetchType.LAZY)
 	@Column(name = "task", nullable = false)
-	public int getTask()
+	public Task getTask()
 	{
 		return this.task;
 	}
 
-	public void setTask(int task)
+	public void setTask(Task task)
 	{
 		this.task = task;
 	}

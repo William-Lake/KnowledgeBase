@@ -1,6 +1,7 @@
 package com.lakedev.KnowledgeBase.ui.tab;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -104,23 +105,43 @@ public class TabTodoList extends VerticalLayout
 			 * TODO Create/save a new todolist task for each todo list item.
 			 */
 			
-//			TodoList todoList = 
-//					
-//					currentTodoList == null ?
-//							
-//							new TodoList() :
-//								
-//								currentTodoList;
-//							
-//			todoList.setName(txtTodoListName.getValue());
-//			
-//			todoList.setTodoListTasks();
-//			
-//			savedNoteRepository.save(savedNote);
-//			
-//			grdTodoList.getDataProvider().refreshAll();
-//			
-//			btnSave.setEnabled(false);
+			TodoList todoList = 
+					
+					currentTodoList == null ?
+							
+							new TodoList() :
+								
+								currentTodoList;
+							
+			List<Task> tasksInGrid = 
+					
+					grdTask
+					.getDataProvider()
+					.fetch(new Query<>())
+					.collect(Collectors.toList());
+			
+			List<Task> tasksInTodoList = 
+					
+					todoList
+					.getTodoListTasks()
+					.stream()
+					.map(todoListTask -> todoListTask.getTask())
+					.collect(Collectors.toList());
+
+			tasksInGrid
+			.stream()
+			.filter(task -> 
+			{
+				Task savedTask = 
+						
+						tasksInTodoList
+						.stream()
+						
+			})
+			
+			grdTodoList.getDataProvider().refreshAll();
+			
+			btnSave.setEnabled(false);
 		});
 		
 		// CLEAR BUTTON ======================================
@@ -198,20 +219,20 @@ public class TabTodoList extends VerticalLayout
 		 * https://github.com/Artur-/spring-data-vaadin-crud/blob/master/src/main/java/crud/backend/PersonRepository.java
 		 * https://github.com/Artur-/spring-data-vaadin-crud/blob/master/src/main/java/crud/vaadin/MainUI.java
 		 */
-	    FilterablePageableDataProvider<TodoList, Object> dataProvider = new FilterablePageableDataProvider<TodoList, Object>() 
+	    FilterablePageableDataProvider<TodoList, Object> todoListDataProvider = new FilterablePageableDataProvider<TodoList, Object>() 
 	    {
 			private static final long serialVersionUID = 4882913761882790088L;
 
 			@Override
 	        protected Page<TodoList> fetchFromBackEnd(Query<TodoList, Object> query,Pageable pageable) 
 	        {
-	            return todoListRepository.findByTodoListNameLikeIgnoreCase(getRepoFilter(), pageable);
+	            return todoListRepository.findByNameLikeIgnoreCase(getRepoFilter(), pageable);
 	        }
 
 	        @Override
 	        protected int sizeInBackEnd(Query<TodoList, Object> query) 
 	        {
-	            return (int) todoListRepository.countByTodoListNameLikeIgnoreCase(getRepoFilter());
+	            return (int) todoListRepository.countByNameLikeIgnoreCase(getRepoFilter());
 	        }
 
 	        private String getRepoFilter() 
@@ -224,12 +245,12 @@ public class TabTodoList extends VerticalLayout
 	        @Override
 	        protected List<QuerySortOrder> getDefaultSortOrders() 
 	        {
-	            return Sort.asc("noteTitle").build();
+	            return Sort.asc("name").build();
 	        }
 
 	    };
 	    
-	    grdTodoList.setDataProvider(dataProvider);
+	    grdTodoList.setDataProvider(todoListDataProvider);
 	    
 	    grdTodoList.getDataProvider().refreshAll();
 	    
@@ -247,7 +268,7 @@ public class TabTodoList extends VerticalLayout
 		
 		txtNameFilter.setPlaceholder("Name Filter");
 		
-		txtNameFilter.addValueChangeListener((valueChanged) -> dataProvider.setFilter(txtNameFilter.getValue()));
+		txtNameFilter.addValueChangeListener((valueChanged) -> todoListDataProvider.setFilter(txtNameFilter.getValue()));
 		
 		// This gathers the Note Title column via it's id, added in the "Building Columns" section.
 		filteringHeader
@@ -264,14 +285,28 @@ public class TabTodoList extends VerticalLayout
 		
 		////// BUILDING COLUMNS
 		
+		// Task Checkbox Column
+		
 		grdTask.addComponentColumn(task -> 
 		{
 			CheckBox chkTask = new CheckBox();
 			
+			chkTask.setValue(task.getComplete() == 1);
+			
+			// TODO Determine if you want to add any style.
+			
+			chkTask.addValueChangeListener(checked -> 
+			{
+				task.setComplete(checked.getValue() ? 1 : 0);
+				
+				taskRepository.save(task);
+			});
+			
+			return chkTask;
 			
 		});
 		
-		// Note Title Column
+		// Task Text Column
 		grdTask
 		.addColumn(Task::getText)
 		.setId("TaskText")
@@ -300,8 +335,6 @@ public class TabTodoList extends VerticalLayout
 		.stream()
 		.forEach(column -> column.setHidable(false));
 		
-
-		
 		grdTask.setColumnReorderingAllowed(false);
 		
 		////// BUILDING JPA DATAPROVIDER
@@ -311,20 +344,20 @@ public class TabTodoList extends VerticalLayout
 		 * https://github.com/Artur-/spring-data-vaadin-crud/blob/master/src/main/java/crud/backend/PersonRepository.java
 		 * https://github.com/Artur-/spring-data-vaadin-crud/blob/master/src/main/java/crud/vaadin/MainUI.java
 		 */
-	    FilterablePageableDataProvider<TodoList, Object> dataProvider = new FilterablePageableDataProvider<TodoList, Object>() 
+	    FilterablePageableDataProvider<Task, Object> taskDataProvider = new FilterablePageableDataProvider<Task, Object>() 
 	    {
 			private static final long serialVersionUID = 4882913761882790088L;
 
 			@Override
-	        protected Page<TodoList> fetchFromBackEnd(Query<TodoList, Object> query,Pageable pageable) 
+	        protected Page<Task> fetchFromBackEnd(Query<Task, Object> query,Pageable pageable) 
 	        {
-	            return todoListRepository.findByTodoListNameLikeIgnoreCase(getRepoFilter(), pageable);
+	            return taskRepository.findByTextLikeIgnoreCase(getRepoFilter(), pageable);
 	        }
 
 	        @Override
-	        protected int sizeInBackEnd(Query<TodoList, Object> query) 
+	        protected int sizeInBackEnd(Query<Task, Object> query) 
 	        {
-	            return (int) todoListRepository.countByTodoListNameLikeIgnoreCase(getRepoFilter());
+	            return (int) taskRepository.countByTextLikeIgnoreCase(getRepoFilter());
 	        }
 
 	        private String getRepoFilter() 
@@ -337,35 +370,35 @@ public class TabTodoList extends VerticalLayout
 	        @Override
 	        protected List<QuerySortOrder> getDefaultSortOrders() 
 	        {
-	            return Sort.asc("noteTitle").build();
+	            return Sort.asc("text").build();
 	        }
 
 	    };
 	    
-	    grdTask.setDataProvider(dataProvider);
+	    grdTask.setDataProvider(taskDataProvider);
 	    
 	    grdTask.getDataProvider().refreshAll();
 	    
 	    ////// ADDING NOTE FILTER CONTROL
 	    
-		HeaderRow filteringHeader = grdTask.appendHeaderRow();
+		HeaderRow taskFilteringHeader = grdTask.appendHeaderRow();
 		
-		TextField txtNameFilter = new TextField();
+		TextField txtTaskTextFilter = new TextField();
 		
-		txtNameFilter.setDescription("Search/Filter TodoLists");
+		txtTaskTextFilter.setDescription("Search/Filter TodoLists");
 		
-		txtNameFilter.setWidth("100%");
+		txtTaskTextFilter.setWidth("100%");
 		
-		txtNameFilter.addStyleName(ValoTheme.TEXTFIELD_TINY);
+		txtTaskTextFilter.addStyleName(ValoTheme.TEXTFIELD_TINY);
 		
-		txtNameFilter.setPlaceholder("Name Filter");
+		txtTaskTextFilter.setPlaceholder("Name Filter");
 		
-		txtNameFilter.addValueChangeListener((valueChanged) -> dataProvider.setFilter(txtNameFilter.getValue()));
+		txtTaskTextFilter.addValueChangeListener((valueChanged) -> taskDataProvider.setFilter(txtNameFilter.getValue()));
 		
 		// This gathers the Note Title column via it's id, added in the "Building Columns" section.
 		filteringHeader
 		.getCell("TodoListName")
-		.setComponent(txtNameFilter);
+		.setComponent(txtTaskTextFilter);
 		
 		// HL BUTTON CONTAINER ================================================
 		

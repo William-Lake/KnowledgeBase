@@ -19,15 +19,17 @@ public class Task implements java.io.Serializable
 	private static final long serialVersionUID = -8575079531428062266L;
 	private int id;
 	private String text;
+	private int complete;
 
 	public Task()
 	{
 	}
 
-	public Task(int id, String text)
+	public Task(int id, String text, int complete)
 	{
 		this.id = id;
 		this.text = text;
+		this.complete = complete;
 	}
 
 	@Id
@@ -52,6 +54,17 @@ public class Task implements java.io.Serializable
 	public void setText(String text)
 	{
 		this.text = text;
+	}
+	
+	@Column(name = "complete", nullable = false)
+	public int getComplete()
+	{
+		return this.complete;
+	}
+	
+	public void setComplete(int complete)
+	{
+		this.complete = complete;
 	}
 
 }

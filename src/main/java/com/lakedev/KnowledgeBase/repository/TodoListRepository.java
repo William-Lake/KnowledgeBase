@@ -9,7 +9,7 @@ import com.lakedev.KnowledgeBase.model.TodoList;
 
 public interface TodoListRepository extends CrudRepository<TodoList, Integer>
 {
-	Page<TodoList> findByTodoListNameLikeIgnoreCase(String nameFilter, Pageable pageable);
+	Page<TodoList> findByNameLikeIgnoreCase(String nameFilter, Pageable pageable);
 	
-	long countByTodoListNameLikeIgnoreCase(String nameFilter);
+	long countByNameLikeIgnoreCase(String nameFilter);
 }
