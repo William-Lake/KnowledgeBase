@@ -10,6 +10,7 @@ import org.vaadin.artur.spring.dataprovider.FilterablePageableDataProvider;
 import com.lakedev.KnowledgeBase.model.SavedNote;
 import com.lakedev.KnowledgeBase.model.Task;
 import com.lakedev.KnowledgeBase.model.TodoList;
+import com.lakedev.KnowledgeBase.model.TodoListTask;
 import com.lakedev.KnowledgeBase.repository.SavedNoteRepository;
 import com.lakedev.KnowledgeBase.repository.TaskRepository;
 import com.lakedev.KnowledgeBase.repository.TodoListRepository;
@@ -113,13 +114,10 @@ public class TabTodoList extends VerticalLayout
 								
 								currentTodoList;
 							
-			List<Task> tasksInGrid = 
-					
-					grdTask
-					.getDataProvider()
-					.fetch(new Query<>())
-					.collect(Collectors.toList());
+			todoList.setName(txtTodoListName.getValue());
 			
+			todoListRepository.save(todoList);
+							
 			List<Task> tasksInTodoList = 
 					
 					todoList
@@ -127,17 +125,25 @@ public class TabTodoList extends VerticalLayout
 					.stream()
 					.map(todoListTask -> todoListTask.getTask())
 					.collect(Collectors.toList());
-
-			tasksInGrid
-			.stream()
-			.filter(task -> 
+			
+			grdTask
+			.getDataProvider()
+			.fetch(new Query<>())
+			.forEach(task -> 
 			{
-				Task savedTask = 
-						
-						tasksInTodoList
-						.stream()
-						
-			})
+				taskRepository.save(task);
+				
+				if (tasksInTodoList.contains(task) == false)
+				{
+					TodoListTask todoListTask = new TodoListTask();
+					
+					todoListTask.setTodoList(todoList);
+					
+					todoListTask.setTask(task);
+					
+					todoListTaskRepository.save(todoListTask);
+				}
+			});
 			
 			grdTodoList.getDataProvider().refreshAll();
 			
